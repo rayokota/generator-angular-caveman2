@@ -1,0 +1,8 @@
+language: node_js
+node_js:
+  - '0.10'
+  - '0.8'
+before_install:
+  - currentfolder=${PWD##*/}
+  - if [ "$currentfolder" != 'generator-angular-caveman2' ]; then cd .. && eval "mv $currentfolder generator-angular-caveman2" && cd generator-angular-caveman2; fi
+

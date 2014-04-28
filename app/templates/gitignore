@@ -1,0 +1,11 @@
+.DS_Store
+node_modules
+*.fasl
+*.dx32fsl
+*.dx64fsl
+*.lx32fsl
+*.lx64fsl
+*.swp
+*.x86f
+*~
+.#*
