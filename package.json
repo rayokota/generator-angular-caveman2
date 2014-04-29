@@ -6,7 +6,8 @@
     "yeoman-generator",
     "Common Lisp",
     "Caveman2",
-    "CL-DBI",
+    "Integral",
+    "Postmodern",
     "AngularJS",
     "Bootstrap"
   ],
