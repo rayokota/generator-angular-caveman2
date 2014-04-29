@@ -2,7 +2,8 @@
 (defpackage <%= baseName %>.web
   (:use :cl
         :caveman2
-        :integral
+        :<%= orm %>
+        <% if (orm != 'integral') { %>:simple-date<% }; %>
         :json
         :<%= baseName %>.config
         :<%= baseName %>.model
@@ -11,6 +12,7 @@
 
 (in-package :json)
 
+<% if (orm == 'integral') { %>
 (defmethod encode-json ((o standard-object)
                         &optional (stream json:*json-output*))
   "Write the JSON representation (Object) of the DAO CLOS object
@@ -22,6 +24,29 @@ O to STREAM (or to *JSON-OUTPUT*)."
                  (as-object-member (key stream)
                    (encode-json (if (eq value :null) nil value) stream))))
                o)))
+<% } else { %>
+(defun date-to-string(date)
+  (multiple-value-bind (year month day) (simple-date:decode-date date)
+    (format nil "~4,'0d-~2,'0d-~2,'0d" year month day)))
+
+(defmethod encode-json ((o standard-object)
+                        &optional (stream json:*json-output*))
+  "Write the JSON representation (Object) of the DAO CLOS object
+O to STREAM (or to *JSON-OUTPUT*)."
+  (with-object (stream)
+    (map-slots (lambda (key value)
+                 (if (eq (class-of value) (find-class 'simple-date:date))
+                     (as-object-member (key stream)
+                     (encode-json (date-to-string value) stream))
+                 (as-object-member (key stream)
+                   (encode-json (cond ((eq value :null) nil)
+                                      ((eq (class-of value) (find-class 'simple-date:date))
+                                       (date-to-string value))
+                                      (t value)) 
+                                stream))))
+               o)))
+<% }; %>
+
 
 (in-package :<%= baseName %>.web)
 
@@ -44,14 +69,14 @@ O to STREAM (or to *JSON-OUTPUT*)."
 
 (defroute ("/<%= baseName %>/<%= pluralize(entity.name) %>/:id" :method :GET) (&key id)
   (setf (headers *response* :content-type) "application/json")
-  (json:encode-json-to-string (find-dao '<%= entity.name %> id)))
+  (json:encode-json-to-string (<% if (orm == 'integral') { %>find<% } else { %>get<% }; %>-dao '<%= entity.name %> id)))
 
 (defroute ("/<%= baseName %>/<%= pluralize(entity.name) %>" :method :POST) ()
   (let* ((json (getf (getf (clack.request:env *request*) :body-parameters) :json))
     <% _.each(entity.attrs, function (attr) { %>(<%= attr.attrName %> (gethash "<%= attr.attrName %>" json))
     <% }); %>
   )
-    (let ((entity (create-dao '<%= entity.name %>
+    (let ((entity (<% if (orm == 'integral') { %>create<% } else { %>make<% }; %>-dao '<%= entity.name %>
                               <% _.each(entity.attrs, function (attr) { %>:<%= attr.attrName %> <%= attr.attrName %>
                               <% }); %>
     )))
@@ -64,15 +89,15 @@ O to STREAM (or to *JSON-OUTPUT*)."
     <% _.each(entity.attrs, function (attr) { %>(<%= attr.attrName %> (gethash "<%= attr.attrName %>" json))
     <% }); %>
   )
-    (let ((entity (find-dao '<%= entity.name %> id)))
+    (let ((entity (<% if (orm == 'integral') { %>find<% } else { %>get<% }; %>-dao '<%= entity.name %> id)))
       <% _.each(entity.attrs, function (attr) { %>(setf (<%= entity.name %>-<%= attr.attrName %> entity) <%= attr.attrName %>)
       <% }); %>
-      (save-dao entity)
+      (update-dao entity)
       (setf (headers *response* :content-type) "application/json")
       (json:encode-json-to-string entity))))
 
 (defroute ("/<%= baseName %>/<%= pluralize(entity.name) %>/:id" :method :DELETE) (&key id)
-  (let ((entity (find-dao '<%= entity.name %> id)))
+  (let ((entity (<% if (orm == 'integral') { %>find<% } else { %>get<% }; %>-dao '<%= entity.name %> id)))
     (delete-dao entity)
     (setf (status *response*) 204)
     ""))

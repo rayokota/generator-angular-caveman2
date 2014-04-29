@@ -137,7 +137,7 @@ EntityGenerator.prototype.askFor = function askFor() {
     } else if (attrType === 'Date') {
       attrImplType = 'date';
     } else if (attrType === 'Enum') {
-      attrImplType = 'enum';
+      attrImplType = this.orm == 'integral' ? 'enum' : 'text';
     }
     this.attrs = _.reject(this.attrs, function (attr) { return attr.attrName === props.attrName; });
     this.attrs.push({ 

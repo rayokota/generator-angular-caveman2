@@ -4,6 +4,8 @@
   (:use :cl)
   (:import-from :clack.builder
                 :builder)
+  <% if (orm != 'integral') { %>(:import-from :clack.middleware.postmodern
+                :<clack-middleware-postmodern>)<% }; %>
   (:import-from :clack.middleware.static
                 :<clack-middleware-static>)
   (:import-from :clack.middleware.session
@@ -42,4 +44,9 @@
                     :output (getf (config) :error-log))
      nil)
  <clack-middleware-session>
+ <% if (orm != 'integral') { %>(<clack-middleware-postmodern>
+  :database (getf (config) :database)
+  :user (getf (config) :user)
+  :password (getf (config) :password)
+  :host (getf (config) :host))<% }; %>
  *web*)

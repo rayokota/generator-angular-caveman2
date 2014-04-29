@@ -34,10 +34,18 @@ AngularCaveman2Generator.prototype.askFor = function askFor() {
     name: 'baseName',
     message: 'What is the name of your application?',
     default: 'myapp'
+  },
+  {
+    type: 'list',
+    name: 'orm',
+    message: 'Which object-relational mapper would you like to use?',
+    choices: ['Integral', 'Postmodern'],
+    default: 'Integral'
   }];
 
   this.prompt(prompts, function (props) {
     this.baseName = props.baseName;
+    this.orm = props.orm == 'Integral' ? 'integral' : 'postmodern';
 
     cb();
   }.bind(this));
@@ -49,6 +57,7 @@ AngularCaveman2Generator.prototype.app = function app() {
   this.resources = [];
   this.generatorConfig = {
     "baseName": this.baseName,
+    "orm": this.orm,
     "entities": this.entities,
     "resources": this.resources
   };

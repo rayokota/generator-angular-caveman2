@@ -22,7 +22,10 @@
                :trivial-types
 
                ;; for ORM
-               :integral)
+               <% if (orm == 'integral') { %>:integral)
+               <% } else { %>:clack-middleware-postmodern
+               :postmodern
+               :simple-date)<% }; %>
   :components ((:module "src"
                 :components
                 ((:file "main" :depends-on ("config"))

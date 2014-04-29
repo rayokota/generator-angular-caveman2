@@ -17,10 +17,28 @@
 (defparameter *template-directory* (merge-pathnames #P"templates/" *application-root*))
 
 (defconfig |development|
-  `(:debug T))
+  `(:debug T
+    <% if (orm == 'integral') { %>
+    :database "my.db"
+    <% } else { %>
+    :database "my_db"
+    :user "postgres"
+    :password "postgres"
+    :host "localhost"
+    <% }; %>
+   ))
 
 (defconfig |production|
-  `(:debug T))
+  `(:debug T
+    <% if (orm == 'integral') { %>
+    :database "my.db"
+    <% } else { %>
+    :database "my_db"
+    :user "postgres"
+    :password "postgres"
+    :host "localhost"
+    <% }; %>
+   ))
 
 (defun config (&optional key)
   (envy:config #.(package-name *package*) key))
